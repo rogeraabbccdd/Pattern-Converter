@@ -2,7 +2,7 @@
 Converter for `.bms`, `.bme` `.pt` `.bytes` and `.tech` 
 
 ## Usage (exe)
-- Download latest build from [release page](https://github.com/rogeraabbccdd/PT2TECH/releases/latest).
+- Download latest build from [release page](https://github.com/rogeraabbccdd/Pattern-Converter/releases/latest).
 - Drag and drop your files to exe.
 
 ## Usage (Node.js)
