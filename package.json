@@ -1,0 +1,27 @@
+{
+  "name": "pattern-converter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "build": "pkg index.js -t win -o converter"
+  },
+  "license": "MIT",
+  "pkg": {
+    "assets": ["exe/bytes_to_text.exe", "exe/pt_to_text.exe"]
+  },
+  "engines": { 
+    "node": "12.20.1" 
+  },
+  "dependencies": {
+    "bms": "^45.1.0",
+    "pkg": "^4.4.9"
+  },
+  "devDependencies": {
+    "eslint": "^7.16.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1"
+  }
+}
