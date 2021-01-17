@@ -3,7 +3,7 @@ Converter for `.bms`, `.bme` `.pt` `.bytes` and `.tech`
 
 ## Usage (exe)
 - Download latest build from [release page](https://github.com/rogeraabbccdd/PT2TECH/releases/latest).
-- Drag and drop your .pt or .bytes to exe.
+- Drag and drop your files to exe.
 
 ## Usage (Node.js)
 - Clone repository.
