@@ -109,7 +109,7 @@ module.exports = async (file) => {
     for (const note of notes) {
       switch (note.attr) {
         case '0':
-          if (note.duration === 6 || note.track > 3) {
+          if (note.duration === 6) {
             tech.packedNotes.push(`Basic|${note.pulse}|${note.track}|${note.keysound.file}`)
           } else {
             tech.packedDragNotes.push({
