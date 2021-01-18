@@ -90,7 +90,7 @@ module.exports = async (file) => {
       return b.timing - a.timing
     })
     // convert data
-    video.offset = Math.round(Timing.beatToSeconds(video.beat))
+    video.offset = Math.round(Timing.beatToSeconds(video.beat)) / 1000
 
     const tech = {
       patternMetadata: {
