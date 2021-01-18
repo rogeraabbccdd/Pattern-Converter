@@ -35,8 +35,7 @@ const main = async () => {
         fileCount++
         await bms2text(process.argv[i])
         await text2bytes(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
-        // No, I think techmania is not ready for this.
-        // await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.tech') {
         fileCount++
         const texts = await tech2text(process.argv[i])

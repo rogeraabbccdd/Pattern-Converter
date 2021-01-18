@@ -13,7 +13,7 @@ Converter for `.bms`, `.bme` `.pt` `.bytes` and `.tech`
 
 ## Supported file type
 - BMS file `.bms`, `.bme`
-  - Will convert to `DJMAX pt txt`, `.bytes`.
+  - Will convert to `DJMAX pt txt`, `.bytes` and `.tech`
   - When convert to `DJMAX pt txt` and `.bytes`, BPM change notes will be placed at track 0, normal notes will be placed at track 1 ~ 7, background notes will be placed from track 20, and will add 1 note with no keysound 1 measure after last note for track end sign.
 - DJMAX file `.pt`, `.bytes`
   - Will convert to `DJMAX pt txt` and `.tech`
