@@ -106,13 +106,7 @@ module.exports = async (file) => {
       packedHoldNotes: [],
       packedDragNotes: []
     }
-    let track = 4
     for (const note of notes) {
-      if (note.track > 3) {
-        note.track = track
-        track++
-        if (track > 11) track = 4
-      }
       switch (note.attr) {
         case '0':
           if (note.duration === 6 || note.track > 3) {
