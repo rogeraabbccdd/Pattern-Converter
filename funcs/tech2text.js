@@ -30,7 +30,7 @@ module.exports = async (file) => {
     // parse notes and collect keysound
     for (const note of pattern.packedNotes) {
       const splitted = note.split('|')
-      let data = {
+      const data = {
         type: '',
         pulse: '',
         lane: '',
@@ -59,7 +59,7 @@ module.exports = async (file) => {
       }
       if (data.lane > 3) {
         data.lane += 12
-        if (data.lane > 63) data.lane = 21
+        if (data.lane > 60) data.lane = 21
       }
       const pos = Math.round(data.pulse / 5)
       if (pos + 192 > endpos) {
@@ -97,7 +97,7 @@ module.exports = async (file) => {
     // parse long notes
     for (const note of pattern.packedHoldNotes) {
       const splitted = note.split('|')
-      let data = {
+      const data = {
         type: '',
         pulse: '',
         duration: '',
@@ -129,7 +129,7 @@ module.exports = async (file) => {
       }
       if (data.lane > 3) {
         data.lane += 12
-        if (data.lane > 63) data.lane = 21
+        if (data.lane > 60) data.lane = 21
       }
       const pos = Math.round(data.pulse / 5)
       if (pos + 192 > endpos) {
@@ -191,7 +191,7 @@ module.exports = async (file) => {
       const noteintrack = notes.filter(note => parseInt(note.track) === i)
       for (const note of noteintrack) {
         const vol = note.volume ? Math.round(note.volume * 127) : 127
-        const pan = note.pan ? Math.round((note.pan+1)*(127/2)) : 64
+        const pan = note.pan ? Math.round((note.pan + 1) * (127 / 2)) : 64
         stringNotes += `#${note.pos} NOTE ${note.keysound} ${vol} ${pan} ${note.attr} ${note.duration} 0\r\n`
       }
     }
