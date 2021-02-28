@@ -90,7 +90,6 @@ module.exports = async (file) => {
       }
       notes.push({ pos, attr, duration: 6, keysound: id, track: data.lane, volume: data.volume, pan: data.pan })
 
-      console.log(data.endOfScanString);
       if (data.endOfScanString && data.lane <= 3) {
         notes.push({ pos, attr: 0, duration: 6, keysound: '0000', track: data.lane + 4, volume: 1, pan: 0 })
       }
