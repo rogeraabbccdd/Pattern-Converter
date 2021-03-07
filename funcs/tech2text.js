@@ -83,10 +83,13 @@ module.exports = async (file) => {
           attr = 6
           break
       }
-      const idx = wavs.findIndex(wav => wav.file === data.sound)
-      const id = idx === -1 ? (wavs.length + 1).toString(16).padStart(4, 0).toUpperCase() : wavs[idx].id
-      if (idx === -1 && data.sound.length > 0) {
-        wavs.push({ file: data.sound, id })
+      let id = '0000'
+      if (data.sound.length > 0) {
+        const idx = wavs.findIndex(wav => wav.file === data.sound)
+        id = idx === -1 ? (wavs.length + 1).toString(16).padStart(4, 0).toUpperCase() : wavs[idx].id
+        if (idx === -1 && data.sound.length > 0) {
+          wavs.push({ file: data.sound, id })
+        }
       }
       notes.push({ pos, attr, duration: 6, keysound: id, track: data.lane, volume: data.volume, pan: data.pan })
 
@@ -147,10 +150,13 @@ module.exports = async (file) => {
           attr = 11
           break
       }
-      const idx = wavs.findIndex(wav => wav.file === data.sound)
-      const id = idx === -1 ? (wavs.length + 1).toString(16).padStart(4, 0).toUpperCase() : wavs[idx].id
-      if (idx === -1 && data.sound.length > 0) {
-        wavs.push({ file: data.sound, id })
+      let id = '0000'
+      if (data.sound.length > 0) {
+        const idx = wavs.findIndex(wav => wav.file === data.sound)
+        id = idx === -1 ? (wavs.length + 1).toString(16).padStart(4, 0).toUpperCase() : wavs[idx].id
+        if (idx === -1 && data.sound.length > 0) {
+          wavs.push({ file: data.sound, id })
+        }
       }
       notes.push({ pos, attr, duration: Math.round(data.duration / 5), keysound: id, track: data.lane, volume: data.volume, pan: data.pan })
 
@@ -165,10 +171,13 @@ module.exports = async (file) => {
       if (pos + 192 > endpos) {
         endpos = pos + 192
       }
-      const idx = wavs.findIndex(wav => wav.file === data[3])
-      const id = idx === -1 ? (wavs.length + 1).toString(16).padStart(4, 0).toUpperCase() : wavs[idx].id
-      if (idx === -1) {
-        wavs.push({ file: data[3], id })
+      let id = '0000'
+      if (data[3].length > 0) {
+        const idx = wavs.findIndex(wav => wav.file === data[3])
+        id = idx === -1 ? (wavs.length + 1).toString(16).padStart(4, 0).toUpperCase() : wavs[idx].id
+        if (idx === -1) {
+          wavs.push({ file: data[3], id })
+        }
       }
       const duration = Math.round(note.packedNodes[1].split('|')[0] / 5)
       notes.push({ pos, attr: 0, duration, keysound: id, track: parseInt(data[2]) })
