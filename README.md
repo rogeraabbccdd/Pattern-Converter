@@ -27,6 +27,8 @@ Converter for `.bms`, `.bme` `.pt` `.bytes` and `.tech`
   - This tool only parse notes, You have to create a pattern in TECHMANIA first, and edit it with text editor.
   - Drag notes angle will not be parsed, you have to edit it in TECHMANIA editor by yourself.
   - You have to fix repeat notes and chain notes after convert by yourself at this moment.  
+- TapSonic Pattern file `.xml`
+  - Will convert to `DJMAX pt txt` and `.bytes` and `.tech`.
 
 ## Credits
 - [samnyan](https://github.com/samnyan) for `bytes_to_text.exe` and `pt_to_text.exe`

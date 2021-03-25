@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "bms": "^45.1.0",
+    "fast-xml-parser": "^3.19.0",
     "pkg": "^4.4.9"
   },
   "devDependencies": {
