@@ -30,7 +30,7 @@ module.exports = async (file) => {
       // track data
       let matches = line.matchAll(regexBPM)
       for (const match of matches) {
-        initbpm = match[1]
+        initbpm = convertBit(match[1])
       }
       // parse keysounds
       matches = line.matchAll(regexWAV)
