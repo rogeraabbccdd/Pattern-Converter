@@ -50,7 +50,6 @@ module.exports = async (file) => {
     }
 
     const notes = []
-    let endPos = 0
     for (const track of json.note_list.track) {
       if (Array.isArray(track.note)) {
         for (const note of track.note) {
@@ -60,9 +59,6 @@ module.exports = async (file) => {
             pos,
             ins: note.ins || 0
           })
-          if (endPos < pos) {
-            endPos = pos
-          }
         }
       } else {
         const pos = Math.round(track.note.tick * scale)
@@ -71,9 +67,6 @@ module.exports = async (file) => {
           pos,
           ins: track.note.ins || 0
         })
-        if (endPos < pos) {
-          endPos = pos
-        }
       }
     }
 
@@ -93,14 +86,13 @@ module.exports = async (file) => {
       }
     }
 
-    endPos += 192
     // write to file
     const output =
     '#SOUND_COUNT 1\r\n' +
     '#TRACK_COUNT 64\r\n' +
     '#POSITION_PER_MEASURE 192\r\n' +
     `#BPM ${convertInt(json.header.songinfo.tempo)}\r\n` +
-    `#END_POSITION ${convertInt(endPos)}\r\n` +
+    `#END_POSITION ${convertInt(Math.round(json.header.songinfo.end_tick * scale))}\r\n` +
     `#TAGB ${convertInt(json.header.songinfo.ms / 1000)}\r\n` +
     stringWAV +
     'POSITION COMMAND PARAMETER\r\n' +
