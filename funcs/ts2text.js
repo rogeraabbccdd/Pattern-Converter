@@ -101,7 +101,7 @@ module.exports = async (file) => {
     '#POSITION_PER_MEASURE 192\r\n' +
     `#BPM ${convertInt(json.header.songinfo.tempo)}\r\n` +
     `#END_POSITION ${convertInt(endPos)}\r\n` +
-    // `#TAGB ${songlength}\r\n` +
+    `#TAGB ${convertInt(json.header.songinfo.ms / 1000)}\r\n` +
     stringWAV +
     'POSITION COMMAND PARAMETER\r\n' +
     stringNotes
