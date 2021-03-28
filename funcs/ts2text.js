@@ -57,7 +57,8 @@ module.exports = async (file) => {
           notes.push({
             track: track.idx,
             pos,
-            ins: note.ins || 0
+            ins: note.ins || 0,
+            dur: note.dur || 6
           })
         }
       } else {
@@ -65,7 +66,8 @@ module.exports = async (file) => {
         notes.push({
           track: track.idx,
           pos,
-          ins: track.note.ins || 0
+          ins: track.note.ins || 0,
+          dur: track.note.dur || 6
         })
       }
     }
@@ -81,7 +83,7 @@ module.exports = async (file) => {
       for (const note of notes) {
         if (note.track === i) {
           const sid = (i === 31 && note.ins === 1) ? '0001' : '0000'
-          stringNotes += `#${note.pos} NOTE ${sid} 127 64 0 6 0\r\n`
+          stringNotes += `#${note.pos} NOTE ${sid} 127 64 0 ${note.dur} 0\r\n`
         }
       }
     }
