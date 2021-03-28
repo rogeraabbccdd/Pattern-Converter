@@ -58,7 +58,7 @@ module.exports = async (file) => {
             track: track.idx,
             pos,
             ins: note.ins || 0,
-            dur: note.dur || 6
+            dur: note.dur * scale || 6
           })
         }
       } else {
@@ -67,7 +67,7 @@ module.exports = async (file) => {
           track: track.idx,
           pos,
           ins: track.note.ins || 0,
-          dur: track.note.dur || 6
+          dur: track.note.dur * scale || 6
         })
       }
     }
