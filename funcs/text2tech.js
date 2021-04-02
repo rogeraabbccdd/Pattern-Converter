@@ -94,7 +94,7 @@ module.exports = async (file) => {
 
     const tech = {
       patternMetadata: {
-        initBpm: (initbpm * 1.0),
+        initBpm: bpmEvents[0].bpm * 1.0,
         bgaOffset: video.offset,
         controlScheme: 0,
         lanes: 0,
