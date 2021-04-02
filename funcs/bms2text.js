@@ -73,6 +73,9 @@ module.exports = async (file) => {
               }
             } else if (i === 63) {
               i = 20
+            } else {
+              track = i
+              break
             }
           }
           tracks[track] += `#${start} NOTE ${ks.newid} 127 64 0 6 0\r\n`
