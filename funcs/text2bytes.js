@@ -4,7 +4,8 @@ const path = require('path')
 module.exports = (file) => {
   console.log(`Converting ${file} to bytes...`)
   return new Promise((resolve, reject) => {
-    const child = spawn(path.join(process.cwd(), 'bytes_to_text.exe'), [file])
+    const exedir = path.join(process.env.APPDATA, './Pattern-Converter')
+    const child = spawn(path.join(exedir, 'bytes_to_text.exe'), [file])
     child.on('close', code => {
       reject(new Error('Failed to convert file to bytes.'))
     })

@@ -4,7 +4,8 @@ const path = require('path')
 module.exports = (file) => {
   console.log(`Parsing pt ${file}...`)
   return new Promise((resolve, reject) => {
-    const child = spawn(path.join(process.cwd(), 'pt_to_text.exe'), [file])
+    const exedir = path.join(process.env.APPDATA, './Pattern-Converter')
+    const child = spawn(path.join(exedir, 'pt_to_text.exe'), [file])
     child.on('close', code => {
       reject(new Error('Failed to parse pt file. Please make sure your pt file is not encrypted.'))
     })
