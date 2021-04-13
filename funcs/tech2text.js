@@ -182,7 +182,56 @@ module.exports = async (file) => {
       const duration = Math.round(note.packedNodes[1].split('|')[0] / 5)
       notes.push({ pos, attr: 0, duration, keysound: id, track: parseInt(data[2]) })
     }
+    // fix chain notes and repeat notes
+    const repeat = [
+      { active: false, last: -1 },
+      { active: false, last: -1 },
+      { active: false, last: -1 },
+      { active: false, last: -1 }
+    ]
+    const chain = { active: false, last: -1, start: -1 }
+    // sort notes by position
+    notes.sort((a, b) => parseInt(a.pos) - parseInt(b.pos))
+    for (const i in notes) {
+      // ignore bg notes
+      if (notes[i].track > 3) continue
+      // Chain
+      if (!chain.active && notes[i].attr === 5) {
+        chain.active = true
+        chain.last = i
+        chain.start = notes[i].pos
+      } else if (chain.active) {
+        if (notes[i].attr === 6) {
+          notes[i].attr = 0
+          chain.last = i
+        } else if (notes[i].attr === 5) {
+          notes[chain.last].attr = 6
+          chain.last = i
+          chain.start = notes[i].pos
+        } else if (notes[i].pos > chain.start && !repeat[notes[i].track].active) {
+          chain.active = false
+          notes[chain.last].attr = 6
+        }
+      }
+      // Repeat
+      if (!repeat[notes[i].track].active && notes[i].attr === 10) {
+        repeat[notes[i].track].active = true
+        repeat[notes[i].track].last = i
+      } else if (repeat[notes[i].track].active) {
+        if (notes[i].attr === 11) {
+          notes[i].attr = 10
+          repeat[notes[i].track].last = i
+        } else {
+          if (notes[i].attr !== 10) repeat[notes[i].track].active = false
+          notes[repeat[notes[i].track].last].attr = 11
+        }
+      }
+    }
 
+    if (chain.active) notes[chain.last].attr = 6
+    for (let i = 0; i < repeat.length; i++) {
+      if (repeat[i].active) notes[repeat[i].last].attr = 11
+    }
     // arrage notes
     let stringNotes = ''
     for (let i = 0; i < 64; i++) {
