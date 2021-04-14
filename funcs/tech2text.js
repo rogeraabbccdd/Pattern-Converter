@@ -179,8 +179,45 @@ module.exports = async (file) => {
           wavs.push({ file: data[3], id })
         }
       }
-      const duration = Math.round(note.packedNodes[1].split('|')[0] / 5)
-      notes.push({ pos, attr: 0, duration, keysound: id, track: parseInt(data[2]) })
+
+      let sumpulse = 0
+      const track = parseInt(data[2])
+      const nodeData = []
+      for (const j in note.packedNodes) {
+        const tmp = note.packedNodes[j].split('|')
+        nodeData.push({ pos: parseInt(tmp[0]), track: parseInt(tmp[1]) })
+        if (parseInt(j) !== 0) {
+          const distanceToPreviousNode = nodeData[j].pos - nodeData[j - 1].pos
+          let attrtrack = nodeData[j].track
+          const leftControlLane = parseFloat(tmp[3])
+          if (parseInt(tmp[1]) === 0 && leftControlLane !== 0) attrtrack = leftControlLane * -1
+          // https://github.com/techmania-team/techmania-converter/blob/main/TechmaniaConverter/TechmaniaConverter/PtConverter.cs#L453-L517
+          // anchorLane = (e.Attribute - 60f) * distanceToPreviousNode / 5400f;
+          // tmp[1] = (e.Attribute - 60) * distanceToPreviousNode / 5400;
+          // tmp[1] * 5400 = (e.Attribute - 60) * distanceToPreviousNode
+          // tmp[1] * 5400 / distanceToPreviousNode = (e.Attribute - 60)
+          // tmp[1] * 5400 / distanceToPreviousNode + 60 = e.Attribute
+          let attr = Math.round(attrtrack * 5400 / distanceToPreviousNode + 60)
+          if (attr < 0) {
+            attr = (attrtrack + 1) * 60
+          }
+          notes.push({
+            pos: pos + Math.round(nodeData[j].pos / 5),
+            track: track + 4,
+            attr,
+            duration: 6,
+            keysound: 0
+          })
+          sumpulse += distanceToPreviousNode
+        }
+      }
+      notes.push({
+        pos,
+        attr: 0,
+        duration: Math.round(sumpulse / 5),
+        keysound: id,
+        track
+      })
     }
     // fix chain notes and repeat notes
     const repeat = [
