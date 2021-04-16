@@ -11,6 +11,7 @@ const text2tech = require('./funcs/text2tech.js')
 const bms2text = require('./funcs/bms2text.js')
 const tech2text = require('./funcs/tech2text.js')
 const ts2text = require('./funcs/ts2text.js')
+const osu2text = require('./funcs/osu2text.js')
 const copyfiles = require('./funcs/copyfiles.js')
 
 const { version } = require('./package.json')
@@ -52,6 +53,21 @@ const main = async () => {
         fileCount++
         await text2bytes(process.argv[i])
         await text2tech(process.argv[i])
+      } else if (ext === '.osu') {
+        fileCount++
+        const result = await osu2text(process.argv[i])
+        switch (result) {
+          case 'version':
+            console.log('Only osu file format v14 supported.')
+            break
+          case 'mode':
+            console.log('Only support osu mania mode.')
+            break
+          default:
+            await text2bytes(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+            await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+            break
+        }
       }
     } catch (error) {
       console.log(error)

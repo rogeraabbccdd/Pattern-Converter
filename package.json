@@ -8,14 +8,18 @@
   },
   "license": "MIT",
   "pkg": {
-    "assets": ["exe/bytes_to_text.exe", "exe/pt_to_text.exe"]
+    "assets": [
+      "exe/bytes_to_text.exe",
+      "exe/pt_to_text.exe"
+    ]
   },
-  "engines": { 
-    "node": "12.20.1" 
+  "engines": {
+    "node": "12.20.1"
   },
   "dependencies": {
     "bms": "^45.1.0",
     "fast-xml-parser": "^3.19.0",
+    "n-readlines": "^1.0.1",
     "pkg": "^4.4.9"
   },
   "devDependencies": {
