@@ -78,6 +78,8 @@ module.exports = async (file) => {
               attr: notes.length > 1 && notes[notes.length - 1].attr === '10' && match[5] === '10' ? '11' : match[5],
               duration: parseInt(match[6]),
               duration2: parseInt(match[6]) * 5,
+              vol: Math.round(parseInt(match[3]) / 127 * 100) / 100,
+              pan: Math.round(parseInt(match[4]) / 127 * 100) / 100 - 0.5,
               track: trackno
             }
           )
@@ -110,7 +112,8 @@ module.exports = async (file) => {
       switch (note.attr) {
         case '0':
           if (note.duration === 6) {
-            tech.packedNotes.push(`Basic|${note.pulse}|${note.track}|${note.keysound.file}`)
+            // E|<type>|<pulse>|<lane>|<volume>|<pan>|<end-of-scan>|<keysound>
+            tech.packedNotes.push(`E|Basic|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           } else {
             tech.packedDragNotes.push({
               // convert timing and duration only
@@ -124,27 +127,28 @@ module.exports = async (file) => {
           }
           break
         case '5':
-          tech.packedNotes.push(`ChainHead|${note.pulse}|${note.track}|${note.keysound.file}`)
+          tech.packedNotes.push(`E|ChainHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           break
         case '6':
-          tech.packedNotes.push(`ChainNode|${note.pulse}|${note.track}|${note.keysound.file}`)
+          tech.packedNotes.push(`E|ChainNode|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           break
         case '10':
           if (note.duration === 6) {
-            tech.packedNotes.push(`RepeatHead|${note.pulse}|${note.track}|${note.keysound.file}`)
+            tech.packedNotes.push(`E|RepeatHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           } else {
-            tech.packedHoldNotes.push(`RepeatHeadHold|${note.track}|${note.pulse}|${note.duration2}|${note.keysound.file}`)
+            tech.packedHoldNotes.push(`E|RepeatHeadHold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           }
           break
         case '11':
           if (note.duration === 6) {
-            tech.packedNotes.push(`Repeat|${note.pulse}|${note.track}|${note.keysound.file}`)
+            tech.packedNotes.push(`E|Repeat|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           } else {
-            tech.packedHoldNotes.push(`RepeatHold|${note.track}|${note.pulse}|${note.duration2}|${note.keysound.file}`)
+            tech.packedHoldNotes.push(`E|RepeatHold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           }
           break
         case '12':
-          tech.packedHoldNotes.push(`Hold|${note.track}|${note.pulse}|${note.duration2}|${note.keysound.file}`)
+          // E|<type>|<lane>|<pulse>|<duration>|<volume>|<pan>|<end-of-scan>|<keysound>
+          tech.packedHoldNotes.push(`E|Hold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
           break
       }
     }
