@@ -5,7 +5,7 @@
 const path = require('path')
 
 const pt2text = require('./funcs/pt2text.js')
-const bytes2text = require('./funcs/pt2text.js')
+const bytes2text = require('./funcs/bytes2text.js')
 const text2bytes = require('./funcs/text2bytes.js')
 const text2tech = require('./funcs/text2tech.js')
 const bms2text = require('./funcs/bms2text.js')
