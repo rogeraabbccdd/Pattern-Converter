@@ -3,10 +3,10 @@ const fs = require('fs')
 const path = require('path')
 const LineByLine = require('n-readlines')
 
-module.exports = async (file) => {
+module.exports = async (dir, file) => {
   console.log(`Converting ${file} to pt text...`)
   try {
-    const liner = new LineByLine(file)
+    const liner = new LineByLine(path.join(dir, file))
     let line = liner.next()
     const hitSounds = { 0: 'hitnormal.wav', 2: 'hitwhistle.wav', 4: 'hitfinish.wav', 8: 'hitclap.wav' }
     let lineNumber = 0
@@ -166,7 +166,7 @@ module.exports = async (file) => {
       stringWAV +
       'POSITION COMMAND PARAMETER\r\n' +
       stringNotes
-    fs.writeFileSync(path.parse(file).name + '.txt', output)
+    fs.writeFileSync(path.join(dir, path.parse(file).name + '.txt'), output)
   } catch (error) {
     console.log(error)
   }

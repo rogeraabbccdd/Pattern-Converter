@@ -1,6 +1,7 @@
 const { convertBit } = require('./utils.js')
 const bms = require('bms')
 const fs = require('fs')
+const path = require('path')
 
 const regexWAV = /#WAV(.{4})\s(.*)/g
 const regexBPM = /#BPM\s(.*)/g
@@ -8,7 +9,7 @@ const regexTrack = /#0 TRACK_START 0 ''/g
 const regexBPMChange = /#(\d+) BPM_CHANGE (\d+)/g
 const regexNote = /#(\d+) NOTE (\S+) (\d+) (\d+) (\d+) (\d+) (\d+)/g
 
-module.exports = async (file) => {
+module.exports = async (dir, file) => {
   console.log(`Converting ${file} to tech...`)
   try {
     const wavs = []
@@ -19,7 +20,7 @@ module.exports = async (file) => {
     const bmstimings = []
 
     // read pt text
-    const data = fs.readFileSync(file, 'utf8')
+    const data = fs.readFileSync(path.join(dir, file), 'utf8')
     const lines = data.split(/\r\n/g)
 
     let trackno = -1
@@ -152,7 +153,7 @@ module.exports = async (file) => {
           break
       }
     }
-    fs.writeFileSync(file + '.tech', JSON.stringify(tech, null, '\t'))
+    fs.writeFileSync(path.join(dir, file + '.tech'), JSON.stringify(tech, null, '\t'))
   } catch (error) {
     console.log(error)
   }

@@ -1,10 +1,11 @@
 const { convertInt } = require('./utils.js')
 const bms = require('bms')
 const fs = require('fs')
+const path = require('path')
 
-module.exports = async (file) => {
+module.exports = async (dir, file) => {
   console.log(`Converting ${file} to pt txt...`)
-  const data = fs.readFileSync(file, 'utf-8')
+  const data = fs.readFileSync(path.join(dir, file), 'utf8')
   const tech = JSON.parse(data)
   const files = []
 
@@ -310,7 +311,7 @@ module.exports = async (file) => {
       'POSITION COMMAND PARAMETER\r\n' +
       stringNotes
     const filename = pattern.patternMetadata.patternName + '.txt'
-    fs.writeFileSync(filename, output)
+    fs.writeFileSync(path.join(dir, filename), output)
     files.push(filename)
   }
   return files

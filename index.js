@@ -28,34 +28,34 @@ const main = async () => {
       if (ext === '.pt') {
         fileCount++
         await pt2text(process.argv[i])
-        await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.bytes') {
         fileCount++
         await bytes2text(process.argv[i])
-        await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.bms' || ext === '.bme') {
         fileCount++
-        await bms2text(process.argv[i])
-        await text2bytes(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
-        await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await bms2text(path.dirname(process.argv[i]), process.argv[i])
+        await text2bytes(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.tech') {
         fileCount++
-        const texts = await tech2text(process.argv[i])
+        const texts = await tech2text(path.dirname(process.argv[i]), process.argv[i])
         for (const text of texts) {
-          await text2bytes(text)
+          await text2bytes(path.dirname(process.argv[i]), text)
         }
       } else if (ext === '.xml') {
         fileCount++
-        await ts2text(process.argv[i])
-        await text2bytes(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
-        await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await ts2text(path.dirname(process.argv[i]), process.argv[i])
+        await text2bytes(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+        await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.txt') {
         fileCount++
-        await text2bytes(process.argv[i])
-        await text2tech(process.argv[i])
+        await text2bytes(path.dirname(process.argv[i]), process.argv[i])
+        await text2tech(path.dirname(process.argv[i]), process.argv[i])
       } else if (ext === '.osu') {
         fileCount++
-        const result = await osu2text(process.argv[i])
+        const result = await osu2text(path.dirname(process.argv[i]), process.argv[i])
         switch (result) {
           case 'version':
             console.log('Only osu file format v14 supported.')
@@ -64,8 +64,8 @@ const main = async () => {
             console.log('Only support osu mania mode.')
             break
           default:
-            await text2bytes(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
-            await text2tech(path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+            await text2bytes(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
+            await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
             break
         }
       }

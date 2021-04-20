@@ -3,11 +3,11 @@ const bms = require('bms')
 const fs = require('fs')
 const path = require('path')
 
-module.exports = async (file) => {
+module.exports = async (dir, file) => {
   console.log(`Converting ${file} to pt txt...`)
   try {
     // BMS vars
-    const bmsSource = fs.readFileSync(file, 'utf-8')
+    const bmsSource = fs.readFileSync(path.join(dir, file), 'utf8')
     const result = bms.Compiler.compile(bmsSource)
     const chart = result.chart
     const timing = bms.Timing.fromBMSChart(chart)
@@ -140,7 +140,7 @@ module.exports = async (file) => {
       stringWAV +
       'POSITION COMMAND PARAMETER\r\n' +
       stringNotes
-    fs.writeFileSync(path.parse(file).name + '.txt', output)
+    fs.writeFileSync(path.join(dir, path.parse(file).name + '.txt'), output)
   } catch (error) {
     console.log(error + '\n')
   }

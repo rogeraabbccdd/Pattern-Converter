@@ -3,11 +3,11 @@ const { convertInt } = require('./utils.js')
 const fs = require('fs')
 const path = require('path')
 
-module.exports = async (file) => {
+module.exports = async (dir, file) => {
   console.log(`Converting ${file} to pt txt...`)
 
   try {
-    const xml = fs.readFileSync(file, 'utf-8')
+    const xml = fs.readFileSync(path.join(dir, file), 'utf8')
     const json = parser.parse(xml, {
       parseAttributeValue: true,
       ignoreAttributes: false,
@@ -99,7 +99,7 @@ module.exports = async (file) => {
     stringWAV +
     'POSITION COMMAND PARAMETER\r\n' +
     stringNotes
-    fs.writeFileSync(path.parse(file).name + '.txt', output)
+    fs.writeFileSync(path.join(dir, path.parse(file).name + '.txt'), output)
   } catch (error) {
     console.log(error + '\n')
   }
