@@ -50,7 +50,7 @@ module.exports = async (dir, file) => {
         bpmEvents.push(
           {
             pulse: parseInt(match[1]) * 5,
-            bpm: bpm
+            bpm
           }
         )
         bmstimings.push(
@@ -70,18 +70,34 @@ module.exports = async (dir, file) => {
         } else {
           notes.push(
             {
+              index: notes.length,
+              pos: parseInt(match[1]),
               pulse: parseInt(match[1]) * 5,
               keysound: {
                 id: match[2],
                 file: wav.length > 0 ? wav[0].file : ''
               },
-              // resolve repeat note attr
-              attr: notes.length > 1 && notes[notes.length - 1].attr === '10' && match[5] === '10' ? '11' : match[5],
+              attr: match[5],
               duration: parseInt(match[6]),
               duration2: parseInt(match[6]) * 5,
               vol: Math.round(parseInt(match[3]) / 127 * 100) / 100,
               pan: Math.round(parseInt(match[4]) / 127 * 100) / 100 - 0.5,
-              track: trackno
+              track: trackno,
+              eos: 0,
+              nodes: [{
+                anchor: {
+                  pulse: 0,
+                  lane: 0
+                },
+                controlLeft: {
+                  pulse: 0,
+                  lane: 0
+                },
+                controlRight: {
+                  pulse: 0,
+                  lane: 0
+                }
+              }]
             }
           )
         }
@@ -89,12 +105,37 @@ module.exports = async (dir, file) => {
     }
     // convert beat to ms
     const Timing = new bms.Timing(initbpm, bmstimings)
-    notes.sort((a, b) => {
-      return b.timing - a.timing
-    })
+
     // convert data
     video.offset = Math.round(Timing.beatToSeconds(video.beat)) / 1000
+    notes.sort((a, b) => a.pos - b.pos)
 
+    const repeat = [false, false, false, false]
+    const chain = { active: false, start: 0 }
+    for (const i in notes) {
+      if (notes[i].track > 3) continue
+
+      // repeat notes
+      if (notes[i].attr === '10') {
+        if (!repeat[notes[i].track]) repeat[notes[i].track] = true
+        else notes[i].attr = '11'
+      } else if (notes[i].attr === '11' && repeat[notes[i].track]) {
+        repeat[notes[i].track] = false
+      } else if (notes[i].attr === '5') {
+        chain.active = true
+        chain.start = notes[i].pos
+      } else if (notes[i].attr === '0' && notes[i].duration === 6 && chain.active && notes[i].pos > chain.start) {
+        notes[i].attr = '6'
+      } else if (notes[i].attr === '6') {
+        chain.active = false
+      }
+
+      // eos note
+      if (notes[i].pos % 192 === 0) {
+        const eosIdx = notes.findIndex(note => note.track === notes[i].track + 4 && note.pos === notes[i].pos)
+        notes[i].eos = eosIdx > -1 ? 1 : 0
+      }
+    }
     const tech = {
       patternMetadata: {
         initBpm: bpmEvents[0].bpm * 1.0,
@@ -114,42 +155,44 @@ module.exports = async (dir, file) => {
         case '0':
           if (note.duration === 6) {
             // E|<type>|<pulse>|<lane>|<volume>|<pan>|<end-of-scan>|<keysound>
-            tech.packedNotes.push(`E|Basic|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+            tech.packedNotes.push(`E|Basic|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           } else {
+            const nodes = note.nodes.map(node => {
+              node = `${node.anchor.pulse}|${node.anchor.lane}|${node.controlLeft.pulse}|${node.controlLeft.lane}|${node.controlRight.pulse}|${node.controlRight.lane}`
+              return node
+            })
             tech.packedDragNotes.push({
               // convert timing and duration only
               // drag note format is really different between tech and pt
-              packedNote: `Drag|${note.pulse}|${note.track}|${note.keysound.file}`,
-              packedNodes: [
-                '0|0|0|0|0|0',
-                `${note.duration2}|0|0|0|0|0`
-              ]
+              packedNote: `E|Drag|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`,
+              // <anchor pulse>|<anchor lane>|<left control point pulse>|<left control point lane>|<right control point pulse>|<right control point lane>
+              packedNodes: nodes
             })
           }
           break
         case '5':
-          tech.packedNotes.push(`E|ChainHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+          tech.packedNotes.push(`E|ChainHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           break
         case '6':
-          tech.packedNotes.push(`E|ChainNode|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+          tech.packedNotes.push(`E|ChainNode|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           break
         case '10':
           if (note.duration === 6) {
-            tech.packedNotes.push(`E|RepeatHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+            tech.packedNotes.push(`E|RepeatHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           } else {
-            tech.packedHoldNotes.push(`E|RepeatHeadHold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+            tech.packedHoldNotes.push(`E|RepeatHeadHold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           }
           break
         case '11':
           if (note.duration === 6) {
-            tech.packedNotes.push(`E|Repeat|${note.pulse}|${note.track}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+            tech.packedNotes.push(`E|Repeat|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           } else {
-            tech.packedHoldNotes.push(`E|RepeatHold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+            tech.packedHoldNotes.push(`E|RepeatHold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           }
           break
         case '12':
           // E|<type>|<lane>|<pulse>|<duration>|<volume>|<pan>|<end-of-scan>|<keysound>
-          tech.packedHoldNotes.push(`E|Hold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|0|${note.keysound.file}`)
+          tech.packedHoldNotes.push(`E|Hold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           break
       }
     }
