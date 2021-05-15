@@ -55,7 +55,7 @@ const main = async () => {
         await text2tech(path.dirname(process.argv[i]), process.argv[i])
       } else if (ext === '.osu') {
         fileCount++
-        const result = await osu2text(path.dirname(process.argv[i]), process.argv[i])
+        const result = await osu2text(path.dirname(process.argv[i]), path.basename(process.argv[i]))
         switch (result) {
           case 'version':
             console.log('Only osu file format v14 supported.')
