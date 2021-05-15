@@ -8,9 +8,10 @@ module.exports = async (dir, file) => {
   try {
     const liner = new LineByLine(path.join(dir, file))
     let line = liner.next()
+
     const hitSounds = { 0: 'hitnormal.wav', 2: 'hitwhistle.wav', 4: 'hitfinish.wav', 8: 'hitclap.wav' }
     let lineNumber = 0
-    const regexSection = /\[(.+)\]/gim
+    const regexSection = /^\[(.+)\]/gim
     let section = ''
     let sampleSet = ''
     const wavs = []
@@ -24,9 +25,9 @@ module.exports = async (dir, file) => {
         if (lineNumber === 1 && text !== 'osu file format v14') return 'version'
 
         // parse sections
-        const sectionTest = regexSection.exec(text)
-        if (sectionTest !== null) {
-          section = sectionTest[1]
+        const sectionText = regexSection.exec(text)
+        if (sectionText !== null) {
+          section = sectionText[1]
           line = liner.next()
           continue
         }
@@ -36,7 +37,7 @@ module.exports = async (dir, file) => {
           case 'General': {
             if (text.includes('Mode') && text.replace('Mode:', '').trim() !== '3') {
               return 'mode'
-            } else if (text.includes('SampleSet')) {
+            } else if (text.toUpperCase().includes('SAMPLESET')) {
               sampleSet = text.replace(/sampleset:/gi, '').trim().toLowerCase()
             }
             break
@@ -86,10 +87,18 @@ module.exports = async (dir, file) => {
             }
             let wavFile = data[data.length - 1]
             if (wavFile.trim().length === 0) {
-              wavFile = `${sampleSet}-${hitSounds[data[4]]}`
+              let count = 0
+              for (const i in hitSounds) {
+                const ks = data[4] & i
+                if (ks > 0) {
+                  wavFile = `${sampleSet}-${hitSounds[ks]}`
+                  if (!wavs.some(wav => wav.file === wavFile.replace(/"/g, ''))) wavs.push({ file: wavFile.replace(/"/g, '') })
+                  count++
+                  if (count === 1) notes.push({ attr: 0, ms, wavFile, vol, bg: false, endms, track })
+                  else notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track: 20 + count })
+                }
+              }
             }
-            notes.push({ attr: 0, ms, wavFile, vol, bg: false, endms, track })
-            if (!wavs.some(wav => wav.file === wavFile.replace(/"/g, ''))) wavs.push({ file: wavFile.replace(/"/g, '') })
             break
           }
         }
