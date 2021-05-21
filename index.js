@@ -40,7 +40,7 @@ const main = async () => {
         await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.tech') {
         fileCount++
-        const texts = await tech2text(path.dirname(process.argv[i]), process.argv[i])
+        const texts = await tech2text(path.dirname(process.argv[i]), path.basename(process.argv[i]))
         for (const text of texts) {
           await text2bytes(path.dirname(process.argv[i]), text)
         }
