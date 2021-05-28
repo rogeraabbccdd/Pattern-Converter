@@ -18,14 +18,12 @@ Converter for `.bms`, `.bme` `.pt` `.bytes` and `.tech`
 - DJMAX file `.pt`, `.bytes`
   - Will convert to `DJMAX pt txt` and `.tech`
   - You have to create a song and empty patterns in TECHMANIA, and merge converted `.tech` file to `track.tech`, this tool only handle notes for you.
-  - Drag notes angle will not be parsed, you have to edit it in TECHMANIA editor by yourself.
-  - You have to fix repeat notes and chain notes after convert by yourself at this moment.  
-    ![](./readme_assets/chain.png)
-    ![](./readme_assets/repeat.png)
 - TECHMANIA file `.tech`
   - Will convert to `DJMAX pt txt` and `.bytes`.
 - TapSonic Pattern file `.xml`
   - Will convert to `DJMAX pt txt` and `.bytes` and `.tech`.
+- Osu file `.osu`
+  - Only support osu mania beatmap in v14 format.
 
 ## Credits
 - [samnyan](https://github.com/samnyan) for `bytes_to_text.exe` and `pt_to_text.exe`
