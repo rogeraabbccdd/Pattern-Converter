@@ -84,20 +84,36 @@ module.exports = async (dir, file) => {
               pan: Math.round(parseInt(match[4]) / 127 * 100) / 100 - 0.5,
               track: trackno,
               eos: 0,
-              nodes: [{
-                anchor: {
-                  pulse: 0,
-                  lane: 0
+              nodes: [
+                {
+                  anchor: {
+                    pulse: 0,
+                    lane: 0
+                  },
+                  controlLeft: {
+                    pulse: 0,
+                    lane: 0
+                  },
+                  controlRight: {
+                    pulse: 0,
+                    lane: 0
+                  }
                 },
-                controlLeft: {
-                  pulse: 0,
-                  lane: 0
-                },
-                controlRight: {
-                  pulse: 0,
-                  lane: 0
+                {
+                  anchor: {
+                    pulse: parseInt(match[6]) * 5,
+                    lane: 0
+                  },
+                  controlLeft: {
+                    pulse: 0,
+                    lane: 0
+                  },
+                  controlRight: {
+                    pulse: 0,
+                    lane: 0
+                  }
                 }
-              }]
+              ]
             }
           )
         }
@@ -113,29 +129,59 @@ module.exports = async (dir, file) => {
     const repeat = [false, false, false, false]
     const chain = { active: false, start: 0 }
     for (const i in notes) {
-      if (notes[i].track > 3) continue
+      if (notes[i].track < 4) {
+        // Convert repeat notes and chain notes
+        if (notes[i].attr === '10') {
+          if (!repeat[notes[i].track]) repeat[notes[i].track] = true
+          else notes[i].attr = '11'
+        } else if (notes[i].attr === '11' && repeat[notes[i].track]) {
+          repeat[notes[i].track] = false
+        } else if (notes[i].attr === '5') {
+          chain.active = true
+          chain.start = notes[i].pos
+        } else if (notes[i].attr === '0' && notes[i].duration === 6 && chain.active && notes[i].pos > chain.start) {
+          notes[i].attr = '6'
+        } else if (notes[i].attr === '6') {
+          chain.active = false
+        }
 
-      // repeat notes
-      if (notes[i].attr === '10') {
-        if (!repeat[notes[i].track]) repeat[notes[i].track] = true
-        else notes[i].attr = '11'
-      } else if (notes[i].attr === '11' && repeat[notes[i].track]) {
-        repeat[notes[i].track] = false
-      } else if (notes[i].attr === '5') {
-        chain.active = true
-        chain.start = notes[i].pos
-      } else if (notes[i].attr === '0' && notes[i].duration === 6 && chain.active && notes[i].pos > chain.start) {
-        notes[i].attr = '6'
-      } else if (notes[i].attr === '6') {
-        chain.active = false
-      }
+        // is eos note or not
+        if (notes[i].pos % 192 === 0) {
+          const eosIdx = notes.findIndex(note => note.track === notes[i].track + 4 && note.pos === notes[i].pos)
+          notes[i].eos = eosIdx > -1 ? 1 : 0
+        }
+      } else if (notes[i].track >= 4 && notes[i].track <= 7) {
+        // find drag notes with special notes
+        const target = notes.filter(note => {
+          return note.track === notes[i].track - 4 && note.duration > 6 && note.attr === '0' && note.pos < notes[i].pos
+        }).sort((a, b) => b.pos - a.pos)[0]
 
-      // eos note
-      if (notes[i].pos % 192 === 0) {
-        const eosIdx = notes.findIndex(note => note.track === notes[i].track + 4 && note.pos === notes[i].pos)
-        notes[i].eos = eosIdx > -1 ? 1 : 0
+        if (target) {
+          const targetidx = notes.indexOf(target)
+          if (notes[targetidx].nodes.length === 2 && notes[targetidx].nodes[1].anchor.pulse === notes[targetidx].duration2) {
+            notes[targetidx].nodes.pop()
+          }
+          // anchorLane = (e.Attribute - 60f) * distanceToPreviousNode / 5400f
+          const pulse = notes[i].pulse - notes[targetidx].pulse
+          const distanceToPreviousNode = notes[targetidx].nodes.length === 1 ? pulse : pulse - notes[targetidx].nodes[notes[targetidx].nodes.length - 1].anchor.pulse
+          notes[targetidx].nodes.push({
+            anchor: {
+              pulse,
+              lane: (notes[i].attr - 60) * distanceToPreviousNode / 5400
+            },
+            controlLeft: {
+              pulse: 0,
+              lane: 0
+            },
+            controlRight: {
+              pulse: 0,
+              lane: 0
+            }
+          })
+        }
       }
     }
+
     const tech = {
       patternMetadata: {
         initBpm: bpmEvents[0].bpm * 1.0,
@@ -151,25 +197,8 @@ module.exports = async (dir, file) => {
       packedDragNotes: []
     }
     for (const note of notes) {
+      if (note.track >= 4 && note.track <= 7) continue
       switch (note.attr) {
-        case '0':
-          if (note.duration === 6) {
-            // E|<type>|<pulse>|<lane>|<volume>|<pan>|<end-of-scan>|<keysound>
-            tech.packedNotes.push(`E|Basic|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
-          } else {
-            const nodes = note.nodes.map(node => {
-              node = `${node.anchor.pulse}|${node.anchor.lane}|${node.controlLeft.pulse}|${node.controlLeft.lane}|${node.controlRight.pulse}|${node.controlRight.lane}`
-              return node
-            })
-            tech.packedDragNotes.push({
-              // convert timing and duration only
-              // drag note format is really different between tech and pt
-              packedNote: `E|Drag|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`,
-              // <anchor pulse>|<anchor lane>|<left control point pulse>|<left control point lane>|<right control point pulse>|<right control point lane>
-              packedNodes: nodes
-            })
-          }
-          break
         case '5':
           tech.packedNotes.push(`E|ChainHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
           break
@@ -193,6 +222,24 @@ module.exports = async (dir, file) => {
         case '12':
           // E|<type>|<lane>|<pulse>|<duration>|<volume>|<pan>|<end-of-scan>|<keysound>
           tech.packedHoldNotes.push(`E|Hold|${note.track}|${note.pulse}|${note.duration2}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
+          break
+        default:
+          if (note.duration === 6) {
+            // E|<type>|<pulse>|<lane>|<volume>|<pan>|<end-of-scan>|<keysound>
+            tech.packedNotes.push(`E|Basic|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
+          } else {
+            const nodes = note.nodes.map(node => {
+              node = `${node.anchor.pulse}|${node.anchor.lane}|${node.controlLeft.pulse}|${node.controlLeft.lane}|${node.controlRight.pulse}|${node.controlRight.lane}`
+              return node
+            })
+            tech.packedDragNotes.push({
+              // convert timing and duration only
+              // drag note format is really different between tech and pt
+              packedNote: `E|Drag|${note.pulse}|${note.track}|${note.vol}|${note.pan}|1|${note.keysound.file}`,
+              // <anchor pulse>|<anchor lane>|<left control point pulse>|<left control point lane>|<right control point pulse>|<right control point lane>
+              packedNodes: nodes
+            })
+          }
           break
       }
     }
