@@ -286,7 +286,9 @@ module.exports = async (dir, file) => {
       }
       const noteintrack = notes.filter(note => parseInt(note.track) === i)
       for (const note of noteintrack) {
-        const vol = note.volume ? Math.round(note.volume * 127) : 127
+        // (vel / 127)^4 = vol%
+        // vel = 127 * Math.pow(vol%, 1/4)
+        const vol = note.volume ? Math.round(127 * Math.pow(note.volume, 1 / 4)) : 127
         const pan = note.pan ? Math.round((note.pan + 1) * (127 / 2)) : 64
         stringNotes += `#${note.pos} NOTE ${note.keysound} ${vol} ${pan} ${note.attr} ${note.duration} 0\r\n`
       }

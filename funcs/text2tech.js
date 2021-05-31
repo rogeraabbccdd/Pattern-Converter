@@ -80,7 +80,8 @@ module.exports = async (dir, file) => {
               attr: match[5],
               duration: parseInt(match[6]),
               duration2: parseInt(match[6]) * 5,
-              vol: Math.round(parseInt(match[3]) / 127 * 100) / 100,
+              // (vel / 127)^4
+              vol: Math.round(Math.pow(parseInt(match[3]) / 127, 4) * 100) / 100,
               pan: Math.round(parseInt(match[4]) / 127 * 100) / 100 - 0.5,
               track: trackno,
               eos: 0,
