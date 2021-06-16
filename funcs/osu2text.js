@@ -19,6 +19,7 @@ module.exports = async (dir, file) => {
     const wavs = []
     const notes = []
     const timings = []
+    let parsedTiming = false
     // read osu file
     while (line) {
       lineNumber++
@@ -30,6 +31,14 @@ module.exports = async (dir, file) => {
         const sectionText = regexSection.exec(text)
         if (sectionText !== null) {
           section = sectionText[1]
+          if (section === 'TimingPoints') {
+            parsedTiming = true
+          }
+
+          if (sectionText[1] !== 'TimingPoints' && parsedTiming) {
+            const tmp = timings[timings.length - 1]
+            timings.push({ bpm: tmp.bpm, vol: tmp.vol, ms: tmp.ms })
+          }
           line = liner.next()
           continue
         }
@@ -64,8 +73,8 @@ module.exports = async (dir, file) => {
             } else {
               bpm = timings[timings.length - 1].bpm * Math.abs(100 / data[1])
             }
-            const vol = parseInt(data[5]) > 0 ? parseInt(data[5]) : timings[timings.length - 1].vol
-            timings.push({ bpm, vol, ms: data[0] })
+            const vol = parseInt(data[5]) / 100
+            timings.push({ bpm, vol, ms: parseInt(data[0]) })
             break
           }
           case 'HitObjects': {
@@ -80,10 +89,11 @@ module.exports = async (dir, file) => {
             let vol = parseInt(data[8])
             if (vol === 0) {
               for (const i in timings) {
-                if (timings[i].ms > ms) {
-                  vol = timings[i - 1].vol
+                if (ms > timings[i].ms) {
+                  vol = timings[i].vol
                 } else if (timings[i].ms === ms) {
                   vol = timings[i].vol
+                  break
                 }
               }
             }
@@ -126,7 +136,7 @@ module.exports = async (dir, file) => {
       return timing
     })
     notes.map(note => {
-      note.wavid = wavs.find(wav => wav.file.replace(/"/g, '') === note.wavFile.replace(/"/g, '')).id
+      note.wavid = note.wavid ? wavs.find(wav => wav.file.replace(/"/g, '') === note.wavFile.replace(/"/g, '')).id : 0
       // 1 beat ms = 60000 / BPM
       // 1 beat = 48 pos
       note.pos = startpos + Math.round(Math.round((note.ms - startms) / (60000 / BPM) * 100) / 100 * 48)
@@ -135,7 +145,7 @@ module.exports = async (dir, file) => {
         duration = (startpos + Math.round(Math.round((note.endms - startms) / (60000 / BPM) * 100) / 100 * 48)) - note.pos
       }
       note.duration = duration
-      note.volume = Math.round(note.vol / 100 * 127)
+      note.volume = Math.round(127 * Math.pow(note.vol, 1 / 4))
       return note
     })
     notes.sort((a, b) => a.pos - b.pos)
