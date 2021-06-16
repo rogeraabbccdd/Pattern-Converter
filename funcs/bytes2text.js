@@ -7,7 +7,7 @@ module.exports = (file) => {
     const exedir = path.join(process.env.APPDATA, './Pattern-Converter')
     const child = spawn(path.join(exedir, 'bytes_to_text.exe'), [file])
     child.on('close', code => {
-      reject(new Error('Failed to parse pt file. Please make sure your pt file is not encrypted.'))
+      reject(new Error('Failed to parse bytes file.'))
     })
     setTimeout(() => {
       child.kill(2)
