@@ -5,6 +5,8 @@ const LineByLine = require('n-readlines')
 
 module.exports = async (dir, file) => {
   console.log(`Converting ${file} to pt text...`)
+
+  const keys = [14, 42, 71, 99, 128, 156, 184, 213, 241, 270, 298, 327, 355, 384, 412, 440, 469, 497]
   try {
     const liner = new LineByLine(path.join(dir, file))
     let line = liner.next()
@@ -72,7 +74,7 @@ module.exports = async (dir, file) => {
             tmp.pop()
             const data = tmp.concat(tmp2)
             // x,y,time,type,hitSound,endTime:hitSample
-            const track = data[0] === '64' ? 0 : data[0] === '192' ? 1 : data[0] === '320' ? 2 : 3
+            const track = keys.indexOf(parseInt(data[0]))
             const endms = parseInt(data[5]) > 0 ? parseInt(data[5]) : 0
             const ms = parseInt(data[2])
             let vol = parseInt(data[8])
@@ -96,8 +98,12 @@ module.exports = async (dir, file) => {
                   count++
                   if (count === 1) notes.push({ attr: 0, ms, wavFile, vol, bg: false, endms, track })
                   else notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track: 20 + count })
+                } else {
+                  notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track })
                 }
               }
+            } else {
+              notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track })
             }
             break
           }
