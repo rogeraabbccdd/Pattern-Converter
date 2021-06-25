@@ -79,7 +79,7 @@ module.exports = async (dir, file) => {
               },
               attr: match[5],
               duration: parseInt(match[6]),
-              duration2: parseInt(match[6]) * 5,
+              duration2: match[5] === '12' ? (parseInt(match[6]) + parseInt(match[7]) * 256) * 5 : parseInt(match[6]) * 5,
               // (vel / 127)^4
               vol: Math.round(Math.pow(parseInt(match[3]) / 127, 4) * 100) / 100,
               pan: Math.round(parseInt(match[4]) / 127 * 100) / 100 - 0.5,
