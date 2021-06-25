@@ -154,7 +154,7 @@ module.exports = async (dir, file) => {
       } else if (notes[i].track >= 4 && notes[i].track <= 7) {
         // find drag notes with special notes
         const target = notes.filter(note => {
-          return note.track === notes[i].track - 4 && note.duration > 6 && note.attr === '0' && note.pos < notes[i].pos
+          return note.track === notes[i].track - 4 && note.duration > 6 && note.attr === '0' && note.pos < notes[i].pos && notes[i].pos <= note.pos + note.duration
         }).sort((a, b) => b.pos - a.pos)[0]
 
         if (target) {
