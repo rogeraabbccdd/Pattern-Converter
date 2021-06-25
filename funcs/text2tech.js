@@ -5,7 +5,7 @@ const path = require('path')
 
 const regexWAV = /#WAV(.{4})\s(.*)/g
 const regexBPM = /#BPM\s(.*)/g
-const regexTrack = /#0 TRACK_START 0 ''/g
+const regexTrack = /#0 TRACK_START \d+ ''/g
 const regexBPMChange = /#(\d+) BPM_CHANGE (\d+)/g
 const regexNote = /#(\d+) NOTE (\S+) (\d+) (\d+) (\d+) (\d+) (\d+)/g
 
