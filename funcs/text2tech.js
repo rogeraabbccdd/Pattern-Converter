@@ -188,11 +188,19 @@ module.exports = async (dir, file) => {
     const tech = {
       patternMetadata: {
         guid: guid(),
-        initBpm: bpmEvents[0].bpm * 1.0,
-        bgaOffset: video.offset,
+        patternName: '',
+        level: 0,
         controlScheme: 0,
         lanes: 0,
+        author: '',
+        backingTrack: '',
+        backImage: '',
+        bga: '',
+        bgaOffset: video.offset,
+        waitForEndOfBga: false,
+        playBgaOnLoop: false,
         firstBeatOffset: 0.0,
+        initBpm: bpmEvents[0].bpm * 1.0,
         bps: speed === '2' ? 4 : 8
       },
       bpmEvents,
