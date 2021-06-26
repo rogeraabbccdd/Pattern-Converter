@@ -184,6 +184,7 @@ module.exports = async (dir, file) => {
       }
     }
 
+    const speed = notes.find(note => note.track === 18 && note.pos === 0).attr
     const tech = {
       patternMetadata: {
         guid: guid(),
@@ -192,7 +193,7 @@ module.exports = async (dir, file) => {
         controlScheme: 0,
         lanes: 0,
         firstBeatOffset: 0.0,
-        bps: 4
+        bps: speed === '2' ? 4 : 8
       },
       bpmEvents,
       packedNotes: [],
