@@ -2,6 +2,7 @@ const { convertBit } = require('./utils.js')
 const bms = require('bms')
 const fs = require('fs')
 const path = require('path')
+const guid = require('./guid.js')
 
 const regexWAV = /#WAV(.{4})\s(.*)/g
 const regexBPM = /#BPM\s(.*)/g
@@ -185,6 +186,7 @@ module.exports = async (dir, file) => {
 
     const tech = {
       patternMetadata: {
+        guid: guid(),
         initBpm: bpmEvents[0].bpm * 1.0,
         bgaOffset: video.offset,
         controlScheme: 0,
