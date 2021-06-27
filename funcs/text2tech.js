@@ -69,6 +69,26 @@ module.exports = async (dir, file) => {
         if (match[5] === '100') {
           video.beat = parseInt(match[1]) * 5
         } else {
+          /***
+          * If input < 64: `normalized = 1 - input / 64`
+          * Otherwise: `normalized = (input - 64) / 63`
+          * ------------------------------------------------
+          * If input < 64: `output = -normalized ^ exponent`
+          * Otherwise: `output = normalized ^ exponent`
+          * ------------------------------------------------
+          * exponent = 0.25
+          ***/
+          let pan = parseInt(64) - 64
+          if (pan !== 0) {
+            let normalized = 0
+            if (pan < 0) {
+              normalized = pan * -1 / 64
+            } else {
+              normalized = pan / 63
+            }
+            pan = Math.pow(normalized, 0.25) * Math.sign(pan)
+          }
+
           notes.push(
             {
               index: notes.length,
@@ -83,7 +103,7 @@ module.exports = async (dir, file) => {
               duration2: match[5] === '12' ? (parseInt(match[6]) + parseInt(match[7]) * 256) * 5 : parseInt(match[6]) * 5,
               // (vel / 127)^4
               vol: Math.round(Math.pow(parseInt(match[3]) / 127, 4) * 100) / 100,
-              pan: Math.round(parseInt(match[4]) / 127 * 100) / 100 - 0.5,
+              pan,
               track: trackno,
               eos: 0,
               nodes: [
