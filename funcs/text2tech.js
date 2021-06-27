@@ -204,7 +204,9 @@ module.exports = async (dir, file) => {
       }
     }
 
-    const speed = notes.find(note => note.track === 18 && note.pos === 0).attr
+    const speedNote = notes.find(note => note.track === 18 && note.pos === 0)
+    let bps = 4
+    if (speedNote) bps = speedNote.attr === '2' ? 4 : 8
     const tech = {
       patternMetadata: {
         guid: guid(),
@@ -221,7 +223,7 @@ module.exports = async (dir, file) => {
         playBgaOnLoop: false,
         firstBeatOffset: 0.0,
         initBpm: bpmEvents[0].bpm * 1.0,
-        bps: speed === '2' ? 4 : 8
+        bps
       },
       bpmEvents,
       packedNotes: [],
