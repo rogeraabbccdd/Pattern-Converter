@@ -78,8 +78,10 @@ module.exports = async (dir, file) => {
           * ------------------------------------------------
           * exponent = 0.25
           ***/
-          let pan = parseInt(64) - 64
+          let pan = parseInt(match[4]) - 64
+          const oldpan = parseInt(match[4])
           if (pan !== 0) {
+            console.log(pan)
             let normalized = 0
             if (pan < 0) {
               normalized = pan * -1 / 64
@@ -88,6 +90,7 @@ module.exports = async (dir, file) => {
             }
             pan = Math.pow(normalized, 0.25) * Math.sign(pan)
           }
+          if (oldpan !== 64) console.log(oldpan, pan)
 
           notes.push(
             {
@@ -232,6 +235,7 @@ module.exports = async (dir, file) => {
     }
     for (const note of notes) {
       if (note.track >= 4 && note.track <= 7) continue
+      // note.keysound.file = note.keysound.file.toLowerCase()
       switch (note.attr) {
         case '5':
           tech.packedNotes.push(`E|ChainHead|${note.pulse}|${note.track}|${note.vol}|${note.pan}|${note.eos}|${note.keysound.file}`)
