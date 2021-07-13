@@ -143,6 +143,7 @@ module.exports = async (dir, file) => {
       let duration = 6
       if (note.endms > 0) {
         duration = (startpos + Math.round(Math.round((note.endms - startms) / (60000 / BPM) * 100) / 100 * 48)) - note.pos
+        note.attr = 12
       }
       note.duration = duration
       note.volume = Math.round(127 * Math.pow(note.vol, 1 / 4))
