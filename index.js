@@ -35,7 +35,7 @@ const main = async () => {
         await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.bms' || ext === '.bme') {
         fileCount++
-        await bms2text(path.dirname(process.argv[i]), process.argv[i])
+        await bms2text(path.dirname(process.argv[i]), path.basename(process.argv[i]))
         await text2bytes(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
         await text2tech(path.dirname(process.argv[i]), path.basename(process.argv[i], path.extname(process.argv[i])) + '.txt')
       } else if (ext === '.tech') {
