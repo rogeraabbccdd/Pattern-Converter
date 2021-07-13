@@ -1,5 +1,4 @@
 const { convertBit } = require('./utils.js')
-const bms = require('bms')
 const fs = require('fs')
 const path = require('path')
 const guid = require('./guid.js')
@@ -14,11 +13,10 @@ module.exports = async (dir, file) => {
   console.log(`Converting ${file} to tech...`)
   try {
     const wavs = []
-    let initbpm = 0
+    let initBpm = 0
     const notes = []
     const bpmEvents = []
     const video = {}
-    const bmstimings = []
 
     // read pt text
     const data = fs.readFileSync(path.join(dir, file), 'utf8')
@@ -32,7 +30,7 @@ module.exports = async (dir, file) => {
       // track data
       let matches = line.matchAll(regexBPM)
       for (const match of matches) {
-        initbpm = convertBit(match[1])
+        initBpm = convertBit(match[1])
       }
       // parse keysounds
       matches = line.matchAll(regexWAV)
@@ -54,20 +52,14 @@ module.exports = async (dir, file) => {
             bpm
           }
         )
-        bmstimings.push(
-          {
-            type: 'bpm',
-            beat: parseInt(match[1]) / 48,
-            bpm
-          }
-        )
       }
       // parse notes
       matches = line.matchAll(regexNote)
       for (const match of matches) {
         const wav = wavs.filter(wav => wav.id === match[2])
         if (match[5] === '100') {
-          video.beat = parseInt(match[1]) * 5
+          video.pulse = parseInt(match[1]) * 5
+          video.pos = parseInt(match[1])
         } else {
           /***
           * If input < 64: `normalized = 1 - input / 64`
@@ -81,7 +73,6 @@ module.exports = async (dir, file) => {
           let pan = parseInt(match[4]) - 64
           const oldpan = parseInt(match[4])
           if (pan !== 0) {
-            console.log(pan)
             let normalized = 0
             if (pan < 0) {
               normalized = pan * -1 / 64
@@ -144,11 +135,12 @@ module.exports = async (dir, file) => {
         }
       }
     }
-    // convert beat to ms
-    const Timing = new bms.Timing(initbpm, bmstimings)
+
+    if (initBpm === 0) initBpm = bpmEvents[0].bpm
+    // video
+    video.offset = 60000 / initBpm * (video.pos / 48) / 1000
 
     // convert data
-    video.offset = Math.round(Timing.beatToSeconds(video.beat)) / 1000
     notes.sort((a, b) => a.pos - b.pos)
 
     const repeat = [false, false, false, false]
@@ -225,7 +217,7 @@ module.exports = async (dir, file) => {
         waitForEndOfBga: false,
         playBgaOnLoop: false,
         firstBeatOffset: 0.0,
-        initBpm: bpmEvents[0].bpm * 1.0,
+        initBpm,
         bps
       },
       bpmEvents,
