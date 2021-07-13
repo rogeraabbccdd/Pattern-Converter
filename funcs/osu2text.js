@@ -18,7 +18,7 @@ module.exports = async (dir, file) => {
     let sampleSet = ''
     const wavs = []
     const notes = []
-    const timings = []
+    let timings = []
     let parsedTiming = false
     // read osu file
     while (line) {
@@ -37,7 +37,7 @@ module.exports = async (dir, file) => {
 
           if (sectionText[1] !== 'TimingPoints' && parsedTiming) {
             const tmp = timings[timings.length - 1]
-            timings.push({ bpm: tmp.bpm, vol: tmp.vol, ms: tmp.ms })
+            timings.push({ bpm: tmp.bpm, vol: tmp.vol, ms: tmp.ms, interval: tmp.interval })
           }
           line = liner.next()
           continue
@@ -69,12 +69,12 @@ module.exports = async (dir, file) => {
             const data = text.split(',')
             let bpm = 60
             if (data[1] > 0) {
-              bpm = Math.round(60000 / data[1])
+              bpm = Math.round(60000 / data[1] * 100) / 100
             } else {
               bpm = timings[timings.length - 1].bpm * Math.abs(100 / data[1])
             }
             const vol = parseInt(data[5]) / 100
-            timings.push({ bpm, vol, ms: parseInt(data[0]) })
+            timings.push({ bpm, vol, ms: parseInt(data[0]), interval: parseFloat(data[1]) })
             break
           }
           case 'HitObjects': {
@@ -107,13 +107,13 @@ module.exports = async (dir, file) => {
                   if (!wavs.some(wav => wav.file === wavFile.replace(/"/g, ''))) wavs.push({ file: wavFile.replace(/"/g, '') })
                   count++
                   if (count === 1) notes.push({ attr: 0, ms, wavFile, vol, bg: false, endms, track })
-                  else notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track: 20 + count })
+                  else notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms, track: 20 + count })
                 } else {
                   notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track })
                 }
               }
             } else {
-              notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms: 0, track })
+              notes.push({ attr: 0, ms, wavFile, vol, bg: true, endms, track })
             }
             break
           }
@@ -128,29 +128,58 @@ module.exports = async (dir, file) => {
     })
 
     // map notes
-    const startms = timings[0].ms
     const startpos = 384
     const BPM = timings[0].bpm
-    timings.map(timing => {
-      timing.pos = startpos + (Math.round((timing.ms - startms) / (60000 / BPM) * 100) / 100 * 48)
-      return timing
+    // caculate timing start pos
+    // 1 beat ms = 60000 / BPM
+    // 1 beat = 48 pos
+    for (let i = 0; i < timings.length; i++) {
+      if (i === 0) {
+        timings[i].beat = 0
+        timings[i].pos = 0
+      } else {
+        timings[i].beat = timings[i - 1].beat + (timings[i].ms - timings[i - 1].ms) / timings[i - 1].interval
+        timings[i].pos = startpos + Math.round(timings[i].beat * 48)
+      }
+    }
+    timings = timings.filter((item, index, self) => {
+      return index === 0 ? true : (item.bpm !== self[index - 1].bpm || item.vol !== self[index - 1].vol)
     })
     notes.map(note => {
       note.wavid = note.wavid ? wavs.find(wav => wav.file.replace(/"/g, '') === note.wavFile.replace(/"/g, '')).id : 0
-      // 1 beat ms = 60000 / BPM
-      // 1 beat = 48 pos
-      note.pos = startpos + Math.round(Math.round((note.ms - startms) / (60000 / BPM) * 100) / 100 * 48)
+      // find current timing point
+      let timingidx = 0
+      let found = false
+      for (let i = 0; i < timings.length; i++) {
+        if (timings[i].ms === note.ms) {
+          timingidx = i
+          found = true
+          break
+        } else if (timings[i].ms > note.ms) {
+          timingidx = i - 1
+          found = true
+          break
+        }
+      }
+      if (!found) timingidx = timings.length - 1
+      const timing = timings[timingidx]
+      note.pos = timing.pos + Math.round(((note.ms - timing.ms) / timing.interval) * 48)
       let duration = 6
+      note.attr = 0
       if (note.endms > 0) {
-        duration = (startpos + Math.round(Math.round((note.endms - startms) / (60000 / BPM) * 100) / 100 * 48)) - note.pos
+        const endpos = timing.pos + Math.round(((note.endms - timing.ms) / timing.interval) * 48)
+        duration = endpos - note.pos
         note.attr = 12
       }
       note.duration = duration
+      if (timingidx === 0) {
+        note.pos += startpos
+      }
       note.volume = Math.round(127 * Math.pow(note.vol, 1 / 4))
       return note
     })
     notes.sort((a, b) => a.pos - b.pos)
-    const endPos = notes[notes.length - 1].pos + 192
+    const endPos = notes[notes.length - 1].pos + notes[notes.length - 1].duration + 192
     notes.push({
       attr: 0,
       pos: endPos,
@@ -176,7 +205,7 @@ module.exports = async (dir, file) => {
       }
       for (const note of notes) {
         if (note.track === i) {
-          stringNotes += `#${note.pos} NOTE ${note.wavid} ${note.volume} 64 0 ${note.duration} 0\r\n`
+          stringNotes += `#${note.pos} NOTE ${note.wavid} ${note.volume} 64 ${note.attr} ${note.duration} 0\r\n`
         }
       }
     }
